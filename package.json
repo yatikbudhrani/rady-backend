@@ -1,0 +1,19 @@
+{
+  "name": "rady-backend",
+  "version": "1.0.0",
+  "description": "This is the official repo for rady-backend",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yatikbudhrani/rady-backend.git"
+  },
+  "author": "Yatik Budhrani",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yatikbudhrani/rady-backend/issues"
+  },
+  "homepage": "https://github.com/yatikbudhrani/rady-backend#readme"
+}
