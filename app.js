@@ -14,11 +14,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect("mongodb+srv://admin-rady:rady-database-password@rady-cluster.bxoms.mongodb.net/radyDB", { useNewUrlParser: true, useUnifiedTopology: true });
 
 const userSchema = new mongoose.Schema({
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    fullName: { type: String, min: 2, required: true },
+    dateOfBirth: { type: String, min: 10, max: 10, required: true },
+    sex: { type: String, max: 1, required: true },
     phoneNumber: { type: Number, required: true },
+    address: { type: String, required: true },
+    role: { type: String, required: true },
     email: { type: String, required: true },
-    password: { type: String, required: true }
+    password: { type: String, min: 6, required: true },
+    // patient
+    medicalRecord: String,
+    // doctor
+    specialization: String,
+    // helper
+    IDProof: String,
+    shift: String
 });
 
 const User = mongoose.model("User", userSchema);
@@ -26,18 +36,26 @@ const User = mongoose.model("User", userSchema);
 app.post("/register", function (req, res) {
     bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
         const newUser = new User({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
+            fullName: req.body.fullName,
+            dateOfBirth: req.body.dateOfBirth,
+            sex: req.body.sex,
             phoneNumber: req.body.phoneNumber,
+            address: req.body.address,
+            role: req.body.role,
             email: req.body.email,
-            password: hash
+            password: hash,
+            medicalRecord: req.body.medicalRecord,
+            specialization: req.body.specialization,
+            IDProof: req.body.IDProof,
+            shift: req.body.shift
         });
         newUser.save(function (err) {
             if (err) {
-                console.log(err);
-                res.send("User could not be registered.");
+                const data = { success: false, msg: err + " User registration failed." };
+                res.send(data);
             } else {
-                res.send("User registered successfully.");
+                const data = { success: true, msg: "User registration successful." };
+                res.send(data);
             }
         });
     });
@@ -47,22 +65,25 @@ app.post("/login", function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
 
+    // Might have to change "User"
     User.findOne({ email: email }, function (err, foundUser) {
         if (err) {
-            console.log(err);
-            res.send(err);
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
         } else {
             if (foundUser) {
                 bcrypt.compare(password, foundUser.password, function (err, result) {
                     if (result === true) {
-                        res.send("Login successful.");
+                        const data = { success: true };
+                        res.send(data);
                     } else {
-                        res.send("Incorrect password.")
+                        const data = { success: false, msg: "Incorrect password." };
+                        res.send(data);
                     }
                 });
             } else {
-                console.log("Incorrect Username.");
-                res.send("Incorrect Username.");
+                const data = { success: false, msg: "User not found." };
+                res.send(data);
             }
         }
     });
