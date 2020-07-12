@@ -35,7 +35,7 @@ const userSchema = Schema({
 });
 
 const appointmentSchema = Schema({
-    unique_ID: { type: String, required: true },
+    patientID: { type: String, required: true },
     patientName: { type: String, required: true },
     time: { type: String, required: true },
     dateOfBirth: { type: String, min: 10, max: 10, required: true },
@@ -44,7 +44,7 @@ const appointmentSchema = Schema({
     generalComments: String,
     medicalRecord: String, // PDF/image link (only 1)
     prescription: String,  // image link (only 1)
-    medicine: [{ type: Schema.Types.ObjectId, ref: "Medicine" }]
+    medicines: [{ type: Schema.Types.ObjectId, ref: "Medicine" }]
 });
 
 const medicineSchema = Schema({
@@ -53,9 +53,18 @@ const medicineSchema = Schema({
     comments: String
 });
 
+const noticeSchema = Schema({
+    source: String,
+    date: { type: String, min: 10, max: 10, required: true },
+    category: { type: String, require: true },
+    heading: { type: String, require: true },
+    content: { type: String, require: true }
+});
+
 const User = mongoose.model("User", userSchema);
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 const Medicine = mongoose.model("Medicine", medicineSchema);
+const Notice = mongoose.model("Notice", noticeSchema);
 
 // APIs
 app.post("/register", function (req, res) {
@@ -132,6 +141,44 @@ app.post("/getAppointments", function (req, res) {
     });
 });
 
+app.post("/postNotice", function (req, res) {
+    const newNotice = new Notice({
+        source: req.body.source,
+        date: req.body.date,
+        category: req.body.category,
+        heading: req.body.heading,
+        content: req.body.content
+    });
+    newNotice.save(function (err) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            const data = { success: true, msg: "Notice posted successfully." };
+            res.send(data);
+        }
+    });
+});
+
+app.get("/getNotices/:noticeCategory", function (req, res) {
+    const noticeCategory = req.params.noticeCategory;
+
+    Notice.find({ category: noticeCategory }, function (err, foundNotices) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            if (foundNotices) {
+                const data = { success: true, notices: foundNotices };
+                res.send(data);
+            } else {
+                const data = { success: false, msg: "No notice available currently." };
+                res.send(data);
+            }
+        }
+    });
+});
+
 app.listen(3000, function () {
     console.log("Server running on port 3000.");
 });
@@ -146,7 +193,7 @@ app.listen(3000, function () {
 //     generalComments: req.body, generalComments,
 //     medicalRecord: req.body.medicalRecord, // PDF/image link (only 1)
 //     prescription: req.body.prescription,  // image link (only 1)
-//     medicine: [{
+//     medicines: [{
 //         medicineName: { type: String, required: true },
 //         dosage: { type: String, required: true },
 //         comments: String
