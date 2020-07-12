@@ -72,8 +72,8 @@ const userSchema = Schema({
         doctorComments: String
     }],
     assignedWork: {
-        doctorName: { type: String, required: true },
-        room: { type: String, required: true },
+        doctorName: String,
+        room: String,
         isDone: Boolean
     }
 });
@@ -165,7 +165,7 @@ app.post("/register", function (req, res) {
                 const data = { success: false, msg: err + " User registration failed." };
                 res.send(data);
             } else {
-                const data = { success: true, msg: "User registration successful." };
+                const data = { success: true, msg: newUser._id, role: newUser.role };
                 res.send(data);
             }
         });
@@ -184,7 +184,7 @@ app.post("/login", function (req, res) {
             if (foundUser) {
                 bcrypt.compare(password, foundUser.password, function (err, result) {
                     if (result === true) {
-                        const data = { success: true, msg: foundUser._id };
+                        const data = { success: true, msg: foundUser._id, role: foundUser.role };
                         res.send(data);
                     } else {
                         const data = { success: false, msg: "Incorrect password." };
@@ -449,8 +449,8 @@ app.get("/getPrescriptions", function (req, res) {
 app.post("/sendAppointmentRequest", function (req, res) {
     const newAppointmentRequest = new AppointmentRequestSchema({
         patientID: req.body.patientID,
-        patientName : req.body.patientName,
-        problem : req.body.problem
+        patientName: req.body.patientName,
+        problem: req.body.problem
     });
     newAppointmentRequest.save(function (err) {
         if (err) {
@@ -495,6 +495,23 @@ app.get("/getAssignedWork", function (req, res) {
                 res.send(data);
             } else {
                 const data = { success: false, msg: "Helper not found." };
+                res.send(data);
+            }
+        }
+    });
+});
+
+app.get("/getAppointmentRequests", function (req, res) {
+    AppointmentRequestSchema.find({}, function (err, foundAppointmentRequests) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            if (foundAppointmentRequests.length > 0) {
+                const data = { success: true, appointmentRequests: foundAppointmentRequests };
+                res.send(data);
+            } else {
+                const data = { success: false, msg: "No requests available currently." };
                 res.send(data);
             }
         }
