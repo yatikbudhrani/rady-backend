@@ -518,6 +518,45 @@ app.get("/getAppointmentRequests", function (req, res) {
     });
 });
 
+app.post("/setAppointment", function (req, res) {
+    const patientID = req.body.patientID;
+    const doctorID = req.body.doctorID;
+    const time = req.body.time;
+
+    User.findById({ _id: patientID }, function (err, foundPatient) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            if (foundPatient) {
+                const appointment = new appointmentSchema({
+                    patientID: foundPatient.patientID,
+                    patientName: foundPatient.patientName,
+                    time: time,
+                    dateOfBirth: foundPatient.dateOfBirth,
+                    gender: foundPatient.gender,
+                    medicalRecord: foundPatient.medicalRecord,
+                    prescription: foundPatient.prescription,
+                });
+                User.findByIdAndUpdate({ _id: doctorID }, {
+                    $push: { appointments: appointment }
+                }, function (err, updatedUser) {
+                    if (err) {
+                        const data = { success: false, msg: err + " Try again." };
+                        res.send(data);
+                    } else {
+                        const data = { success: true, msg: "Appointment fixed" };
+                        res.send(data);
+                    }
+                });
+            } else {
+                const data = { success: false, msg: "Patient not found." };
+                res.send(data);
+            }
+        }
+    });
+});
+
 app.listen(3000, function () {
     console.log("Server running on port 3000.");
 });
