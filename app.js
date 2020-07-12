@@ -113,8 +113,8 @@ app.post("/login", function (req, res) {
     });
 });
 
-app.get("/getAppointments", function (req, res) {
-    const doctorID = req.headers.doctorID;
+app.post("/getAppointments", function (req, res) {
+    const doctorID = req.body.doctorID;
 
     User.findById(doctorID, function (err, foundDoctor) {
         if (err) {
