@@ -29,6 +29,7 @@ const userSchema = Schema({
     // doctor
     specialization: String,
     appointments: [{ type: Schema.Types.ObjectId, ref: "Appointment" }],
+    visits: [{ type: Schema.Types.ObjectId, ref: "Visit" }],
     // helper
     IDProof: String,
     shift: String
@@ -61,10 +62,19 @@ const noticeSchema = Schema({
     content: { type: String, require: true }
 });
 
+const visitSchema = Schema({
+    doctorID: { type: String, required: true },
+    doctorName: { type: String, required: true },
+    roomNumber: { type: String, required: true },
+    time: { type: String, required: true },
+    hasVisited: Boolean
+});
+
 const User = mongoose.model("User", userSchema);
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 const Medicine = mongoose.model("Medicine", medicineSchema);
 const Notice = mongoose.model("Notice", noticeSchema);
+const Visit = mongoose.model("Vsist", visitSchema);
 
 // APIs
 app.post("/register", function (req, res) {
@@ -122,8 +132,8 @@ app.post("/login", function (req, res) {
     });
 });
 
-app.post("/getAppointments", function (req, res) {
-    const doctorID = req.body.doctorID;
+app.get("/getAppointments", function (req, res) {
+    const doctorID = req.headers.doctorid;
 
     User.findById(doctorID, function (err, foundDoctor) {
         if (err) {
@@ -173,6 +183,52 @@ app.get("/getNotices/:noticeCategory", function (req, res) {
                 res.send(data);
             } else {
                 const data = { success: false, msg: "No notice available currently." };
+                res.send(data);
+            }
+        }
+    });
+});
+
+app.get("/getVisits", function (req, res) {
+    const doctorID = req.headers.doctorid;
+
+    User.findById(doctorID, function (err, foundDoctor) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            if (foundDoctor) {
+                const data = { success: true, visits: foundDoctor.visits };
+                res.send(data);
+            } else {
+                const data = { success: false, msg: "Doctor not found." };
+                res.send(data);
+            }
+        }
+    });
+});
+
+app.get("/getAvailableHelpers", function (req, res) {
+    const dateObject = new Date();
+    const time = dateObject.getHours();
+
+    if (time < 12)
+        var currentShift = "M";
+    else if (time < 18)
+        var currentShift = "A";
+    else
+        var currentShift = "E";
+
+    User.find({ role: "helper", shift: currentShift }, function (err, foundHelpers) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            if (foundHelpers) {
+                const data = { success: true, helpers: foundHelpers };
+                res.send(data);
+            } else {
+                const data = { success: false, msg: "No helpers available for current shift." };
                 res.send(data);
             }
         }
