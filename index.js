@@ -194,6 +194,20 @@ app.get("/doctorsList", function (req, res) {
     });
 });
 
+app.get("/upcomingAppointments", function (req, res) {
+    const patientID = req.headers.patientid;
+
+    User.findById(patientID, function (err, foundPatient) {
+        if (foundPatient.upcomingAppointments.length > 0) {
+            const data = { success: true, upcomingAppointments: foundPatient.upcomingAppointments };
+            res.send(data);
+        } else {
+            const data = { success: true, msg: "No upcoming appointments." };
+            res.send(data);
+        }
+    });
+});
+
 app.listen(3000, function () {
     console.log("Server running on port 3000.");
 });
