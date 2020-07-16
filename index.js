@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose.connect("mongodb+srv://admin-rady:rady-database-password@rady-cluster.bxoms.mongodb.net/radyDatabase", { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Schemas
+// Schema
 const userSchema = Schema({
     fullName: { type: String, required: true },
     address: { type: String, required: true },
@@ -91,6 +91,7 @@ const userSchema = Schema({
 const User = mongoose.model("User", userSchema);
 
 // APIs
+// Authentication
 app.post("/register", function (req, res) {
     bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
         const newUser = new User({
@@ -118,6 +119,33 @@ app.post("/register", function (req, res) {
                 res.send(data);
             }
         });
+    });
+});
+
+app.post("/login", function (req, res) {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    User.findOne({ email: email }, function (err, foundUser) {
+        if (err) {
+            const data = { success: false, msg: err + " Try again." };
+            res.send(data);
+        } else {
+            if (foundUser) {
+                bcrypt.compare(password, foundUser.password, function (err, result) {
+                    if (result === true) {
+                        const data = { success: true, msg: { id: foundUser._id, medicalRecord: foundUser.medicalRecord }, name: foundUser.fullName, role: foundUser.role };
+                        res.send(data);
+                    } else {
+                        const data = { success: false, msg: "Incorrect password." };
+                        res.send(data);
+                    }
+                });
+            } else {
+                const data = { success: false, msg: "User not registered." };
+                res.send(data);
+            }
+        }
     });
 });
 
