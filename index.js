@@ -149,6 +149,32 @@ app.post("/login", function (req, res) {
     });
 });
 
+// Patient, Doctor and Staff
+app.get("/userDetails", function (req, res) {
+    const userID = req.headers.userid;
+
+    User.findById(userID, function (err, foundUser) {
+        const data = {
+            fullName: foundUser.fullName,
+            address: foundUser.address,
+            DOB: foundUser.DOB,
+            gender: foundUser.gender,
+            phoneNumber: foundUser.phoneNumber,
+            email: foundUser.email,
+            // Doctor
+            department: foundUser.department,
+            cabinNumber: foundUser.cabinNumber,
+            daysAvailable: foundUser.daysAvailable,
+            // Patient
+            medicalRecord: foundUser.medicalRecord,
+            // Staff
+            idProof: foundUser.idProof,
+            staffPost: foundUser.staffPost
+        };
+        res.send(data);
+    });
+});
+
 app.listen(3000, function () {
     console.log("Server running on port 3000.");
 });
