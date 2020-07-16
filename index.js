@@ -175,6 +175,25 @@ app.get("/userDetails", function (req, res) {
     });
 });
 
+// Patient
+app.get("/doctorsList", function (req, res) {
+    User.find({ role: "D" }, "fullName department cabinNumber", function (err, foundDoctors) {
+        if (foundDoctors) {
+            const data = {
+                success: true,
+                doctorsList: foundDoctors
+            }
+            res.send(data);
+        } else {
+            const data = {
+                success: false,
+                msg: "No doctors have registered with this hospital."
+            };
+            res.send(data);
+        }
+    });
+});
+
 app.listen(3000, function () {
     console.log("Server running on port 3000.");
 });
