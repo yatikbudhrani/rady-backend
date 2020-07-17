@@ -60,7 +60,7 @@ const userSchema = Schema({
         doctorName: String,
         doctorDepartment: String,
         doctorCabinNumber: String,
-        problem: String,
+        problem: String
     }],
     prescriptions: [{
         timestamp: String,
@@ -88,7 +88,14 @@ const userSchema = Schema({
     }]
 });
 
+const appointmentRequestsSchema = Schema({
+    patientID: { type: String, required: true },
+    patientName: { type: String, required: true },
+    problem: { type: String, required: true }
+});
+
 const User = mongoose.model("User", userSchema);
+const AppointmentRequest = mongoose.model("AppointmentRequest", appointmentRequestsSchema);
 
 // APIs
 // Authentication
@@ -187,7 +194,7 @@ app.get("/doctorsList", function (req, res) {
         } else {
             const data = {
                 success: false,
-                msg: "No doctors have registered with this hospital."
+                msg: "No doctors are registered in this hospital."
             };
             res.send(data);
         }
@@ -204,6 +211,43 @@ app.get("/upcomingAppointments", function (req, res) {
         } else {
             const data = { success: true, msg: "No upcoming appointments." };
             res.send(data);
+        }
+    });
+});
+
+app.post("/requestAppointment", function (req, res) {
+    const patientID = req.body.patientID;
+    const problem = req.body.problem;
+
+    const newAppointmentRequest = new AppointmentRequest({
+        patientID: patientID,
+        patientName: req.body.patientName,
+        problem: problem
+    });
+    newAppointmentRequest.save(function (err) {
+        if (err) {
+            data = { sucess: false };
+            res.send(data);
+        } else {
+            const newAppointment = {
+                appointmentStatus: "Pending",
+                appointmentDate: "PPPPPPPPPP",
+                appointmentTime: "PPPPP",
+                doctorID: "Pending",
+                doctorName: "Pending",
+                doctorDepartment: "Pending",
+                doctorCabinNumber: "Pending",
+                problem: problem
+            };
+            User.findByIdAndUpdate(patientID, { $push: { "upcomingAppointments": newAppointment } }, function (err, patient) {
+                if (err) {
+                    data = { sucess: false };
+                    res.send(data);
+                } else {
+                    data = { sucess: true };
+                    res.send(data);
+                }
+            });
         }
     });
 });
