@@ -94,8 +94,15 @@ const appointmentRequestSchema = Schema({
     problem: { type: String, required: true }
 });
 
+const roomSchema = Schema({
+    roomCategory: { type: String, required: true },
+    occupiedBeds: { type: Number, required: true },
+    vacantBeds: { type: Number, required: true }
+});
+
 const User = mongoose.model("User", userSchema);
 const AppointmentRequest = mongoose.model("AppointmentRequest", appointmentRequestSchema);
+const Room = mongoose.model("Room", roomSchema);
 
 // APIs
 // Authentication
@@ -273,6 +280,13 @@ app.post("/deletePrescription", function (req, res) {
     User.findById(patientID, function (err, foundPatient) {
         foundPatient.prescriptions.pull({ timestamp: timestamp });
         const data = { success: true };
+        res.send(data);
+    });
+});
+
+app.get("/availableRooms", function (req, res) {
+    Room.find({}, function (err, foundRooms) {
+        const data = { rooms: foundRooms };
         res.send(data);
     });
 });
