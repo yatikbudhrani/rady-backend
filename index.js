@@ -88,14 +88,14 @@ const userSchema = Schema({
     }]
 });
 
-const appointmentRequestsSchema = Schema({
+const appointmentRequestSchema = Schema({
     patientID: { type: String, required: true },
     patientName: { type: String, required: true },
     problem: { type: String, required: true }
 });
 
 const User = mongoose.model("User", userSchema);
-const AppointmentRequest = mongoose.model("AppointmentRequest", appointmentRequestsSchema);
+const AppointmentRequest = mongoose.model("AppointmentRequest", appointmentRequestSchema);
 
 // APIs
 // Authentication
@@ -249,6 +249,31 @@ app.post("/requestAppointment", function (req, res) {
                 }
             });
         }
+    });
+});
+
+app.get("/prescriptions", function (req, res) {
+    const patientID = req.headers.patientid;
+
+    User.findById(patientID, function (err, foundPatient) {
+        if (foundPatient.prescriptions.length > 0) {
+            const data = { success: true, prescriptions: foundPatient.prescriptions };
+            res.send(data);
+        } else {
+            const data = { success: true, msg: "No prescription found." };
+            res.send(data);
+        }
+    });
+});
+
+app.post("/deletePrescription", function (req, res) {
+    const patientID = req.body.patientID;
+    const timestamp = req.body.timestamp;
+
+    User.findById(patientID, function (err, foundPatient) {
+        foundPatient.prescriptions.pull({ timestamp: timestamp });
+        const data = { success: true };
+        res.send(data);
     });
 });
 
