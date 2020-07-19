@@ -346,6 +346,20 @@ app.get("/availableRooms", function (req, res) {
     });
 });
 
+// Doctor
+app.get("/scheduledAppointments", function (req, res) {
+    const doctorID = req.headers.doctorid;
+
+    User.findById(doctorID, function (err, foundDoctor) {
+        if (foundDoctor.scheduledAppointments.length > 0) {
+            const data = { success: true, scheduledAppointments: foundDoctor.scheduledAppointments }
+        } else {
+            const data = { success: false, msg: "No scheduled appointments." };
+            res.send(data);
+        }
+    });
+});
+
 // Staff
 app.post("/applyForLeave", function (req, res) {
     const newLeave = Leave({
