@@ -350,11 +350,24 @@ app.get("/availableRooms", function (req, res) {
 app.get("/scheduledAppointments", function (req, res) {
     const doctorID = req.headers.doctorid;
 
+    const date = new Date();
+    const currentDate = date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
+
+    let currentScheduledAppointments = [];
+
     User.findById(doctorID, function (err, foundDoctor) {
         if (foundDoctor.scheduledAppointments.length > 0) {
-            const data = { success: true, scheduledAppointments: foundDoctor.scheduledAppointments }
+            foundDoctor.scheduledAppointments.forEach(appointment => {
+                if (appointment.appointmentDate.equals(currentDate))
+                    currentScheduledAppointments.push(appointment);
+            });
+            if (currentScheduledAppointments.length > 0) {
+                const data = { success: true, scheduledAppointments: currentScheduledAppointments };
+            } else {
+                const data = { success: false, msg: "No appointments scheduled for today." };
+            }
         } else {
-            const data = { success: false, msg: "No scheduled appointments." };
+            const data = { success: false, msg: "No appointments scheduled." };
             res.send(data);
         }
     });
