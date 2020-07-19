@@ -88,6 +88,14 @@ const userSchema = Schema({
     }]
 });
 
+const noticeSchema = ({
+    category: { type: String, max: 1, required: true },
+    postedBy: { type: String, required: true },
+    date: { type: String, min: 10, max: 10, required: true },
+    heading: { type: String, required: true },
+    content: { type: String, required: true }
+});
+
 const appointmentRequestSchema = Schema({
     patientID: { type: String, required: true },
     patientName: { type: String, required: true },
@@ -108,6 +116,7 @@ const leaveSchema = Schema({
 });
 
 const User = mongoose.model("User", userSchema);
+const Notice = mongoose.model("Notice", noticeSchema);
 const AppointmentRequest = mongoose.model("AppointmentRequest", appointmentRequestSchema);
 const Room = mongoose.model("Room", roomSchema);
 const Leave = mongoose.model("Leave", leaveSchema);
@@ -194,6 +203,44 @@ app.get("/userDetails", function (req, res) {
             staffPost: foundUser.staffPost
         };
         res.send(data);
+    });
+});
+
+// Doctor and Staff
+app.get("/allNotices", function (req, res) {
+    Notice.find({ category: "G" }, "postedBy date heading content", function (err, foundNotices) {
+        if (foundNotices) {
+            const data = {
+                success: true,
+                notices: foundNotices
+            }
+            res.send(data);
+        } else {
+            const data = {
+                success: false,
+                msg: "No notices have been posted recently."
+            };
+            res.send(data);
+        }
+    });
+});
+
+app.get("/notices", function (req, res) {
+    const role = req.headers.role;
+    Notice.find({ category: role }, "postedBy date heading content", function (err, foundNotices) {
+        if (foundNotices) {
+            const data = {
+                success: true,
+                notices: foundNotices
+            }
+            res.send(data);
+        } else {
+            const data = {
+                success: false,
+                msg: "No notices have been posted recently."
+            };
+            res.send(data);
+        }
     });
 });
 
