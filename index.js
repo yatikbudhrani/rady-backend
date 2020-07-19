@@ -78,7 +78,7 @@ const userSchema = Schema({
         visitTime: { type: String, min: 5, max: 5 },
         patientName: String,
         patientRoomNumber: String,
-        instruvctions: String
+        instructions: String
     }],
     allotedDoctors: [{
         allotmentTime: { type: String, min: 5, max: 5 },
@@ -362,6 +362,31 @@ app.post("/applyForLeave", function (req, res) {
             const data = { success: true };
             res.send(data);
         }
+    });
+});
+
+app.get("/staffVisits", function (req, res) {
+    const staffID = req.headers.staffid;
+
+    User.findById(staffID, function (err, foundStaff) {
+        if (foundStaff.staffVisits.length > 0) {
+            const data = { success: true, visits: foundStaff.staffVisits };
+            res.send(data);
+        } else {
+            const data = { success: true, msg: "No upcoming visits." };
+            res.send(data);
+        }
+    });
+});
+
+app.post("/visitCompleted", function (req, res) {
+    const staffID = req.body.staffID
+    const visitTime = req.body.visitTime;
+
+    User.findById(staffID, function (err, foundStaff) {
+        foundStaff.staffVisits.pull({ visitTime: visitTime });
+        const data = { success: true };
+        res.send(data);
     });
 });
 
