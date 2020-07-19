@@ -373,6 +373,22 @@ app.get("/scheduledAppointments", function (req, res) {
     });
 });
 
+app.get("/appointmentDetails", function (req, res) {
+    const doctorID = req.headers.doctorid;
+    const patientID = req.headers.patientid;
+
+    User.findById(patientID, function (err, foundPatient) {
+        let lastAppointment = foundPatient.upcomingAppointments.find(appointment => appointment.doctorID == doctorID);
+        if (lastAppointment) {
+            const data = { patientGender: foundPatient.gender, patientDOB: foundPatient.DOB, lastAppointmentDate: lastAppointment.appointmentDate, patientMedicalRecord: foundPatient.medicalRecord };
+            res.send(data);
+        } else {
+            const data = { patientGender: foundPatient.gender, patientDOB: foundPatient.DOB, lastAppointmentDate: "N/A", patientMedicalRecord: foundPatient.medicalRecord };
+            res.send(data);
+        }
+    });
+});
+
 // Staff
 app.post("/applyForLeave", function (req, res) {
     const newLeave = Leave({
