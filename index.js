@@ -100,9 +100,17 @@ const roomSchema = Schema({
     vacantBeds: { type: Number, required: true }
 });
 
+const leaveSchema = Schema({
+    staffID: { type: String, required: true },
+    staffName: { type: String, required: true },
+    leaveDates: { type: String, required: true },
+    status: { type: Boolean, required: true }
+});
+
 const User = mongoose.model("User", userSchema);
 const AppointmentRequest = mongoose.model("AppointmentRequest", appointmentRequestSchema);
 const Room = mongoose.model("Room", roomSchema);
+const Leave = mongoose.model("Leave", leaveSchema);
 
 // APIs
 // Authentication
@@ -288,6 +296,25 @@ app.get("/availableRooms", function (req, res) {
     Room.find({}, function (err, foundRooms) {
         const data = { rooms: foundRooms };
         res.send(data);
+    });
+});
+
+// Staff
+app.post("/applyForLeave", function (req, res) {
+    const newLeave = Leave({
+        staffID: req.body.staffID,
+        staffName: req.body.staffName,
+        leaveDates: req.body.leaveDates,
+        status: false
+    });
+    newLeave.save(function (err) {
+        if (err) {
+            const data = { success: false };
+            res.send(data);
+        } else {
+            const data = { success: true };
+            res.send(data);
+        }
     });
 });
 
