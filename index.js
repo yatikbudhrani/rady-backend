@@ -389,6 +389,56 @@ app.get("/appointmentDetails", function (req, res) {
     });
 });
 
+app.get("/availableDoctorsList", function (req, res) {
+    let object = new Date();
+    let day = object.getDay();
+
+    switch (day) {
+        case 0:
+            day = "monday";
+            break;
+        case 1:
+            day = "tuesday";
+            break;
+        case 2:
+            day = "wednesday";
+            break;
+        case 3:
+            day = "thursday";
+            break;
+        case 4:
+            day = "friday";
+            break;
+        case 5:
+            day = "saturday";
+            break;
+        case 0:
+            day = "sunday";
+            break;
+    };
+
+    let availableDoctors = [];
+
+    User.find({ role: "D" }, "_id fullName department cabinNumber daysAvailable", function (err, foundDoctors) {
+        if (foundDoctors) {
+            foundDoctors.forEach(doctor => {
+                if (doctor.daysAvailable.includes(day))
+                    availableDoctors.push(doctor);
+            });
+            if (availableDoctors) {
+                const data = { success: true, availableDoctorsList: availableDoctors };
+                res.send(data);
+            } else {
+                const data = { success: false, msg: "No doctors are available today." };
+                res.send(data);
+            }
+        } else {
+            const data = { success: false, msg: "No doctors are registered in this hospital." };
+            res.send(data);
+        }
+    });
+});
+
 // Staff
 app.post("/applyForLeave", function (req, res) {
     const newLeave = Leave({
