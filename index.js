@@ -271,7 +271,7 @@ app.get("/upcomingAppointments", function (req, res) {
             const data = { success: true, upcomingAppointments: foundPatient.upcomingAppointments };
             res.send(data);
         } else {
-            const data = { success: true, msg: "No upcoming appointments." };
+            const data = { success: false, msg: "No upcoming appointments." };
             res.send(data);
         }
     });
@@ -322,7 +322,7 @@ app.get("/prescriptions", function (req, res) {
             const data = { success: true, prescriptions: foundPatient.prescriptions };
             res.send(data);
         } else {
-            const data = { success: true, msg: "No prescription found." };
+            const data = { success: false, msg: "No prescription found." };
             res.send(data);
         }
     });
@@ -373,7 +373,7 @@ app.get("/staffVisits", function (req, res) {
             const data = { success: true, visits: foundStaff.staffVisits };
             res.send(data);
         } else {
-            const data = { success: true, msg: "No upcoming visits." };
+            const data = { success: false, msg: "No upcoming visits." };
             res.send(data);
         }
     });
@@ -387,6 +387,20 @@ app.post("/visitCompleted", function (req, res) {
         foundStaff.staffVisits.pull({ visitTime: visitTime });
         const data = { success: true };
         res.send(data);
+    });
+});
+
+app.get("/allotedDoctors", function (req, res) {
+    const staffID = req.headers.staffid;
+
+    User.findById(staffID, function (err, foundStaff) {
+        if (foundStaff.allotedDoctors.length > 0) {
+            const data = { success: true, allotedDoctors: foundStaff.allotedDoctors };
+            res.send(data);
+        } else {
+            const data = { success: false, msg: "No task has been assigned to you." };
+            res.send(data);
+        }
     });
 });
 
